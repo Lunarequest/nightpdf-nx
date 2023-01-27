@@ -18,7 +18,7 @@ export default {
     const fileNameToPackageName = filename =>
       filename.replace(resolve(process.cwd(), 'packages') + sep, '').split(sep)[0];
     return [...new Set(filenames.map(fileNameToPackageName))].map(
-      p => `yarn typecheck:${p} --if-present`,
+      p => `yarn typecheck:${p}`,
     );
   },
 };

@@ -2,5 +2,5 @@
  * @module preload
  */
 
-export {sha256sum} from './nodeCrypto';
-export {versions} from './versions';
+export {removeAllListeners, openNewPDF, newWindow, togglePrinting, resizeWindow} from './window';
+export {on, getPath} from './misc';

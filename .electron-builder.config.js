@@ -24,6 +24,16 @@ if (process.env.VITE_APP_VERSION === undefined) {
  * @see https://www.electron.build/configuration/configuration
  */
 const config = {
+  appId: 'io.github.lunarequest.Nightpdf-nx',
+  productName: 'NightPDF-nx',
+  fileAssociations: [
+    {
+      ext: 'pdf',
+      icon: 'buildResources/icon.icns',
+      role: 'viewer',
+      isPackage: false,
+    },
+  ],
   directories: {
     output: 'dist',
     buildResources: 'buildResources',
@@ -31,6 +41,32 @@ const config = {
   files: ['packages/**/dist/**'],
   extraMetadata: {
     version: process.env.VITE_APP_VERSION,
+  },
+  linux: {
+    desktop: {
+      Name: 'NightPDF-nx',
+      Comment: 'Dark mode PDF reader',
+    },
+    icon: 'buildResources/icon.icns',
+    publish: ['github'],
+    target: ['AppImage', 'deb', 'rpm'],
+    category: 'Utilty',
+  },
+  win: {
+    publish: ['github'],
+    target: ['nsis', 'portable'],
+    icon: 'buildResources/icon.ico',
+  },
+  mac: {
+    publish: ['github'],
+    category: 'public.app-category.productivity',
+    target: ['dmg', 'zip'],
+    bundleVersion: 1,
+    artifactName: 'NightPDF-nx-${version}.${ext}',
+    hardenedRuntime: true,
+    darkModeSupport: true,
+    gatekeeperAssess: false,
+    type: 'distribution',
   },
 };
 
