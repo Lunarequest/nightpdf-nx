@@ -14,8 +14,8 @@ jobs:
         with:
           node-version: 19 # Need for npm >=7.7
           cache: 'yarn'
-
-      - run: yarn run format --if-present
+      - run: yarn install --frozen-lockfile
+      - run: yarn format --if-present
       - run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
