@@ -1,6 +1,7 @@
 import {ipcRenderer} from 'electron';
 
-export async function getPath(filePath: string) {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export async function getPath(filePath: any) {
   return await ipcRenderer.invoke('getPath', filePath);
 }
 

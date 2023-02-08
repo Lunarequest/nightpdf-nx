@@ -21,6 +21,7 @@ function _try(func: any, fallbackValue: number) {
     return fallbackValue;
   }
 }
+
 declare global {
   interface HTMLElement {
     noUiSlider: any;
@@ -32,7 +33,7 @@ declare global {
 
 const nightPDF = (function () {
   console.log('loading');
-  let _pdfElement: any;
+  let _pdfElement: HTMLIFrameElement;
   let _appContainerElement: HTMLElement;
   let _headerElement: HTMLElement;
   let _titleElement: HTMLElement;
@@ -51,7 +52,7 @@ const nightPDF = (function () {
   let _customButton: HTMLElement;
 
   function main() {
-    _pdfElement = document.getElementById('pdfjs');
+    _pdfElement = document.getElementById('pdfjs') as HTMLIFrameElement;
     _headerElement = document.getElementById('header')!;
     _appContainerElement = document.getElementById('pdfjs')!;
     _titleElement = document.getElementById('title')!;
@@ -69,6 +70,10 @@ const nightPDF = (function () {
     _splashElement = document.getElementById('splash')!;
     _splashExtraElement = document.getElementById('splash-extra')!;
 
+    const observer = new MutationObserver(_setupDarkMode);
+    const config = {attributes: true, childList: true, subtree: true};
+    observer.observe(_pdfElement, config);
+
     //setup electron listeners
     removeAllListeners('file-open');
     on('file-open', (_e: string, msg: string) => {
@@ -77,7 +82,10 @@ const nightPDF = (function () {
 
     removeAllListeners('file-print');
     on('file-print', (_e: string, _msg: string) => {
-      _pdfElement.ownerDocument.getElementById('print').dispatchEvent(new Event('click'));
+      const print = _pdfElement.ownerDocument.getElementById('print');
+      if (print) {
+        print.dispatchEvent(new Event('click'));
+      }
     });
 
     // setup dom listeners
@@ -207,11 +215,11 @@ const nightPDF = (function () {
       console.log('opening in new window');
       newWindow(file);
     } else {
+      _updateTitle(file);
       _appContainerElement.style.zIndex = '1';
       _pdfElement.src =
         './pdfjs/web/viewer.html?file=' + 'file://' + encodeURIComponent(file) + '#pagemode=none';
-      _pdfElement.onload = _fileDidLoad;
-      _updateTitle(file);
+      _pdfElement.onload = _fileDidLoad as any;
       //send message to update window size
     }
     _fileDidLoad(file);
@@ -220,11 +228,10 @@ const nightPDF = (function () {
   const _fileDidLoad = (file: string) => {
     console.log('Loaded PDF');
     _updateTitle(file);
+    _setupSliders();
     _headerElement.style.visibility = 'visible';
     togglePrinting(true);
     resizeWindow(null);
-    _setupDarkMode();
-    _setupSliders();
   };
 
   const _handlePresetChange = (preset: string) => {
@@ -430,16 +437,27 @@ const nightPDF = (function () {
       });
     });
   };
-
-  const _setupDarkMode = () => {
-    const style = document.createElement('style');
-    style.setAttribute('id', 'pageStyle');
-    style.textContent = 'div#viewer .page {';
-    style.textContent +=
-      'filter: brightness(0.91) grayscale(0.95) invert(0.95) sepia(0.55) hue-rotate(180deg);';
-    style.textContent += 'border-image: none;';
-    style.textContent += '}';
-    _pdfElement.ownerDocument.head.appendChild(style);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const _setupDarkMode = (mutationList: MutationRecord[], observer: MutationObserver) => {
+    for (const mutation of mutationList) {
+      if (mutation.type) {
+          const style = document.createElement('style');
+          const content = _pdfElement.contentDocument;
+          style.setAttribute('id', 'pageStyle');
+          style.textContent = 'div#viewer .page {';
+          style.textContent +=
+            'filter: brightness(0.91) grayscale(0.95) invert(0.95) sepia(0.55) hue-rotate(180deg);';
+          style.textContent += 'border-image: none;';
+          style.textContent += '}';
+          if (content) {
+              const head = content.head;
+              console.log(head);
+              if (head){
+                head.appendChild(style);
+              }
+            }
+        }
+      }
   };
 
   const _updateDarkSettings = (cssFilter: string) => {
@@ -480,6 +498,8 @@ const nightPDF = (function () {
   };
 
   const _updateTitle = async (filePath: string) => {
+    const filePathString = filePath.toString();
+    console.log(filePath, filePathString);
     const fileName = await getPath(filePath);
     console.log(fileName);
     if (fileName) {

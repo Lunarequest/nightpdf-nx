@@ -24,7 +24,8 @@ import {join, parse} from 'path';
 import menutemplate from '/@/menutemplate';
 let menuIsConfigured = false;
 
-function getpath(filePath: string) {
+/*eslint-disable @typescript-eslint/no-explicit-any*/
+function getpath(filePath: any) {
   return parse(filePath).base;
 }
 
